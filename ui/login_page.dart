@@ -11,31 +11,39 @@ class LoginPage extends StatefulWidget {
 }
   
 class _LoginPageState extends State<LoginPage> {
-  bool passwordVisible = false;
-  String _phone = null;
-  String _password = null;
+  bool _passwordVisible = false;
   final  _keyPhone = TextEditingController();
   final _keyPassword = TextEditingController();
+  FocusNode _passwordFocusNode = FocusNode();
+  bool _isPhoneEmpty = false;
+  bool _isPasswordEmpty = false;
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       body: new Center(
         child: _userPassword(),
       )
     );
   }
+  @override
+  void initState(){
+    super.initState();
+    _passwordFocusNode.addListener(_onFocusPassword);
+  }
+  void _onFocusPassword(){
+    _passwordFocusNode.hasFocus? print('here is password') : null;
+  }
 
   Widget _userPassword(){
     return Container(
       width: 230.0,
-      height: 230.0,
+      height: 300.0,
       child: Column(
         children: <Widget>[
           Padding(
             padding: EdgeInsets.only(
-                top: 20.0, bottom: 10.0, left: 15.0, right: 25.0),
+                top: 15.0, left: 15.0, right: 25.0),
             child: TextField(
               controller: _keyPhone,
               keyboardType: TextInputType.phone,
@@ -46,16 +54,28 @@ class _LoginPageState extends State<LoginPage> {
                   color: Colors.black,
                   size: 15,
                 ),
-                hintText: "手机号",
+                labelText: "手机号",
+                hintText: "请输入手机号码",
+                errorText: _isPhoneEmpty? "手机号为空" : null,
+                errorStyle: TextStyle(
+                    color: Color(0xffff0000),
+                    fontSize: 12.0
+                ),
+                errorMaxLines: 1,
               ),
+              onEditingComplete: (){
+                FocusScope.of(context).requestFocus(_passwordFocusNode);
+              },
+              textInputAction: TextInputAction.next,
             ),
           ),
           Padding(
             padding: EdgeInsets.only(
-              bottom: 10.0, left: 15.0, right: 25.0),
+              bottom: 5.0, left: 15.0, right: 25.0),
             child: TextField(
               controller: _keyPassword,
-              obscureText: ! passwordVisible,
+              focusNode: _passwordFocusNode,
+              obscureText: ! _passwordVisible,
               decoration: InputDecoration(
                 icon: Icon(
                   FontAwesomeIcons.solidKeyboard,
@@ -64,23 +84,28 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    passwordVisible ? Icons.visibility : Icons.visibility_off,
-                    color: passwordVisible ? Colors.blue : Colors.grey,
+                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                    color: _passwordVisible ? Colors.blue : Colors.grey,
                   ),
                   onPressed: (){
                     setState(() {
-                      passwordVisible = !passwordVisible; 
+                      _passwordVisible = !_passwordVisible; 
                     });
                   },
                 ),
-                hintText: "密    码",
+                labelText: "密    码",
+                hintText: "请输入密码",
+                errorText: _isPasswordEmpty? "密码不能为空" : null,
               ),
+              onSubmitted: (val){
+                _logIn();
+              },
             ),
           ),
           Row(children: <Widget>[
             Padding(
               padding: EdgeInsets.only(
-                top: 10.0, bottom: 15.0, left: 15.0, right: 25.0),
+                bottom: 15.0, left: 15.0, right: 25.0),
               child: GestureDetector(
                 child: Text(
                   '忘 记 密 码',
@@ -91,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 onTap: (){
-                  Toast.show("忘记密码", context);
+                  Toast.show("phone: "+_keyPhone.text+", 忘记密码", context);
                 },
               )
             ),
@@ -103,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
                 color: Colors.blue,
                 textColor: Colors.white,
                 onPressed: (){
-                  Toast.show("手机号: "+_keyPhone.text+"  密码: "+_keyPassword.text, context);
+                  _logIn();
                 },
                 child: Text(
                   "登录",
@@ -115,5 +140,12 @@ class _LoginPageState extends State<LoginPage> {
         ],
       ),
     );
+  }
+  void _logIn(){
+    setState(() {
+      _keyPhone.text.isEmpty? _isPhoneEmpty = true : _isPhoneEmpty = false;
+      _keyPassword.text.isEmpty? _isPasswordEmpty = true : _isPasswordEmpty = false; 
+    });
+    !_isPhoneEmpty && !_isPasswordEmpty? print("phone: "+_keyPhone.text+" password: "+_keyPassword.text) : null;
   }
 }
