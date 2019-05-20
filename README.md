@@ -74,6 +74,8 @@ errorText: 使 TextField 显示错误提示文字( 默认为红色, 位于输入
 
 根据提示说明, FocusNode 是焦点树的叶, 可以获取到焦点( 英文原文: A leaf node in the focus tree that can receive focus. ). 
 
+失去焦点: FocusScope.of(context).requestFocus(FocusNode()); 在点击登录时调用, 会使当前在操作的输入框失去焦点.
+
 ## 为密码输入框添加 可见/不可见 按钮
 
 1. 定义一个 bool 参数: bool passwordVisible = false;
@@ -94,9 +96,28 @@ errorText: 使 TextField 显示错误提示文字( 默认为红色, 位于输入
 	),
 	```
 
-	
+
+## 登录等待界面
+
+在点击登录后应该会有一个转圈圈等待界面的, 增强交互感.
+
+1. 设置 flag: bool _showLoading = false;
+
+2. 用一个 List 来存放主界面( 手机号, 密码输入框, 忘记密码, 登录按钮 ), 和根据 flag 来决定是否加入 loading 界面. 
+
+	详见: login_page.dart: _logInWindow().
+
+3. 点击登录后判断是否符合登录条件, 是的话就通过 setState() 设置 _showLoading = true;
+
+## 异步处理
+
+[官方文档](<https://dart.dev/tutorials/language/futures>)
+
+登录的时候一方面向服务器发起请求, 另一方面维持 loading 状态, 等待服务器响应. 
+
+详见 login_page.dart: _logInProcess()
 
 # TODO
 
-- [ ] 添加背景
-- [ ] 添加方框并美化
+- [x] 添加背景
+- [x] 添加方框并美化

@@ -17,128 +17,168 @@ class _LoginPageState extends State<LoginPage> {
   FocusNode _passwordFocusNode = FocusNode();
   bool _isPhoneEmpty = false;
   bool _isPasswordEmpty = false;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: new Center(
-        child: _userPassword(),
-      )
+      body: _logInWindow()
     );
   }
-  @override
-  void initState(){
-    super.initState();
-    _passwordFocusNode.addListener(_onFocusPassword);
-  }
-  void _onFocusPassword(){
-    _passwordFocusNode.hasFocus? print('here is password') : null;
-  }
 
-  Widget _userPassword(){
-    return Container(
-      width: 230.0,
-      height: 300.0,
-      child: Column(
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(
-                top: 15.0, left: 15.0, right: 25.0),
-            child: TextField(
-              controller: _keyPhone,
-              keyboardType: TextInputType.phone,
-              maxLength: 11,
-              decoration: InputDecoration(
-                icon: Icon(
-                  FontAwesomeIcons.phone,
-                  color: Colors.black,
-                  size: 15,
-                ),
-                labelText: "手机号",
-                hintText: "请输入手机号码",
-                errorText: _isPhoneEmpty? "手机号为空" : null,
-                errorStyle: TextStyle(
-                    color: Color(0xffff0000),
-                    fontSize: 12.0
-                ),
-                errorMaxLines: 1,
-              ),
-              onEditingComplete: (){
-                FocusScope.of(context).requestFocus(_passwordFocusNode);
-              },
-              textInputAction: TextInputAction.next,
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(
-              bottom: 5.0, left: 15.0, right: 25.0),
-            child: TextField(
-              controller: _keyPassword,
-              focusNode: _passwordFocusNode,
-              obscureText: ! _passwordVisible,
-              decoration: InputDecoration(
-                icon: Icon(
-                  FontAwesomeIcons.solidKeyboard,
-                  color: Colors.black,
-                  size: 15,
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                    color: _passwordVisible ? Colors.blue : Colors.grey,
-                  ),
-                  onPressed: (){
-                    setState(() {
-                      _passwordVisible = !_passwordVisible; 
-                    });
-                  },
-                ),
-                labelText: "密    码",
-                hintText: "请输入密码",
-                errorText: _isPasswordEmpty? "密码不能为空" : null,
-              ),
-              onSubmitted: (val){
-                _logIn();
-              },
-            ),
-          ),
-          Row(children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(
-                bottom: 15.0, left: 15.0, right: 25.0),
-              child: GestureDetector(
-                child: Text(
-                  '忘 记 密 码',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                    decoration: TextDecoration.underline
-                  ),
-                ),
-                onTap: (){
-                  Toast.show("phone: "+_keyPhone.text+", 忘记密码", context);
-                },
-              )
-            ),
-            
-            Padding(
-              padding: EdgeInsets.only(
-                bottom: 15.0, left: 15.0, right: 25.0),
-              child: FlatButton(
-                color: Colors.blue,
-                textColor: Colors.white,
-                onPressed: (){
-                  _logIn();
-                },
-                child: Text(
-                  "登录",
-                  style: TextStyle(fontSize: 15.0),
-                )
-              ),
-            ),
-          ],)
-        ],
+  Widget _logInWindow(){
+    List<Widget> childrens = [];
+    final _mainContainer = Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("img/water.png"),
+          fit: BoxFit.cover,
+        )
       ),
+      child: new Container(
+        decoration: new BoxDecoration(
+          color: Colors.grey.shade200.withOpacity(0.7),
+        ),
+        child:  Center(
+          child: new Container(
+            width: 235.0,
+            height: 280.0,
+            child: Column(
+              children: <Widget>[
+                _phonePassword(),
+                _buttons(),
+              ],
+            ),
+          ),
+        ),
+      )
+    );
+    final _loadingContainer = Container(
+      constraints: BoxConstraints.expand(),
+      color: Colors.black12,
+      child: Center(
+        child: Opacity(
+          opacity: 0.9,
+          child: new CircularProgressIndicator(),
+        ),
+      ),
+    );
+    childrens.add(_mainContainer);
+    _isLoading? childrens.add(_loadingContainer) : null;
+    return Stack(
+      children: childrens,
+    );
+  }
+  Widget _phonePassword(){
+    return new Container(
+      decoration: new BoxDecoration(
+        border: new Border.all(color: Color(0x3F3F3F), width: 0.5),
+        color: Colors.grey.shade200.withOpacity(0.9),
+        borderRadius: new BorderRadius.vertical(top: Radius.elliptical(20, 20), bottom: Radius.elliptical(20, 20)),
+        // boxShadow: [BoxShadow(color: Color(0x99FFFF00), offset: Offset(5.0, 5.0),    blurRadius: 10.0, spreadRadius: 2.0), BoxShadow(color: Color(0x9900FF00), offset: Offset(1.0, 1.0)), BoxShadow(color: Color(0xFF0000FF))],
+      ),
+      child: Column(children: <Widget>[
+        Padding(
+          padding: EdgeInsets.only(
+              left: 15.0, right: 25.0),
+          child: TextField(
+            controller: _keyPhone,
+            keyboardType: TextInputType.phone,
+            maxLength: 11,
+            decoration: InputDecoration(
+              icon: Icon(
+                FontAwesomeIcons.phone,
+                color: Colors.black,
+                size: 15,
+              ),
+              labelText: "手机号",
+              hintText: "请输入手机号码",
+              errorText: _isPhoneEmpty? "手机号为空" : null,
+              errorStyle: TextStyle(
+                  color: Color(0xffff0000),
+                  fontSize: 12.0
+              ),
+              errorMaxLines: 1,
+            ),
+            onEditingComplete: (){
+              FocusScope.of(context).requestFocus(_passwordFocusNode);
+            },
+            textInputAction: TextInputAction.next,
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(
+            bottom: 20.0, left: 15.0, right: 25.0),
+          child: TextField(
+            controller: _keyPassword,
+            focusNode: _passwordFocusNode,
+            obscureText: ! _passwordVisible,
+            decoration: InputDecoration(
+              icon: Icon(
+                FontAwesomeIcons.solidKeyboard,
+                color: Colors.black,
+                size: 15,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                  color: _passwordVisible ? Colors.blue : Colors.grey,
+                ),
+                onPressed: (){
+                  setState(() {
+                    _passwordVisible = !_passwordVisible; 
+                  });
+                },
+              ),
+              labelText: "密    码",
+              hintText: "请输入密码",
+              errorText: _isPasswordEmpty? "密码不能为空" : null,
+            ),
+            onSubmitted: (val){
+              _logIn();
+            },
+          ),
+        ),
+      ],),
+    );
+  }
+  Widget _buttons(){
+    return new Row(
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.only(
+            top: 15.0, left: 15.0, right: 25.0),
+          child: GestureDetector(
+            child: Text(
+              '忘 记 密 码',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[600],
+                decoration: TextDecoration.underline
+              ),
+            ),
+            onTap: (){
+              Toast.show("phone: "+_keyPhone.text+", 忘记密码", context);
+            },
+          )
+        ),
+      
+        Padding(
+          padding: EdgeInsets.only(
+            top: 15.0, left: 15.0, right: 25.0),
+          child: FlatButton(
+            color: Colors.blue,
+            textColor: Colors.white,
+            onPressed: (){
+              _logIn();
+            },
+            child: Text(
+              "登    录",
+              style: TextStyle(fontSize: 15.0),
+            )
+          ),
+        ),
+      ],
     );
   }
   void _logIn(){
@@ -146,6 +186,23 @@ class _LoginPageState extends State<LoginPage> {
       _keyPhone.text.isEmpty? _isPhoneEmpty = true : _isPhoneEmpty = false;
       _keyPassword.text.isEmpty? _isPasswordEmpty = true : _isPasswordEmpty = false; 
     });
-    !_isPhoneEmpty && !_isPasswordEmpty? print("phone: "+_keyPhone.text+" password: "+_keyPassword.text) : null;
+    if(!_isPhoneEmpty && !_isPasswordEmpty){
+      FocusScope.of(context).requestFocus(FocusNode());//lost focus
+      setState(() {
+        _isLoading = true;
+      });
+      _logInProcess().then((onValue){
+        setState(() {
+          _isLoading = false; 
+        });
+        print("log in success");
+      });
+    }
+  }
+  Future _logInProcess() async{
+    print("log in button is tapped");
+    return Future.delayed(Duration(seconds: 5), (){
+      Toast.show("登录超时, 请重试", context);
+    });
   }
 }
