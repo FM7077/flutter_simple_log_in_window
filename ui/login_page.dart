@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:toast/toast.dart';
+import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key}) : super(key: key);
@@ -73,9 +77,8 @@ class _LoginPageState extends State<LoginPage> {
     return new Container(
       decoration: new BoxDecoration(
         border: new Border.all(color: Color(0x3F3F3F), width: 0.5),
-        color: Colors.grey.shade200.withOpacity(0.9),
+        color: Colors.grey.shade200.withOpacity(0.8),
         borderRadius: new BorderRadius.vertical(top: Radius.elliptical(20, 20), bottom: Radius.elliptical(20, 20)),
-        // boxShadow: [BoxShadow(color: Color(0x99FFFF00), offset: Offset(5.0, 5.0),    blurRadius: 10.0, spreadRadius: 2.0), BoxShadow(color: Color(0x9900FF00), offset: Offset(1.0, 1.0)), BoxShadow(color: Color(0xFF0000FF))],
       ),
       child: Column(children: <Widget>[
         Padding(
@@ -187,7 +190,8 @@ class _LoginPageState extends State<LoginPage> {
       _keyPassword.text.isEmpty? _isPasswordEmpty = true : _isPasswordEmpty = false; 
     });
     if(!_isPhoneEmpty && !_isPasswordEmpty){
-      FocusScope.of(context).requestFocus(FocusNode());//lost focus
+      FocusScope.of(context).requestFocus(FocusNode());//unfocus
+
       setState(() {
         _isLoading = true;
       });
@@ -195,14 +199,39 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _isLoading = false; 
         });
-        print("log in success");
+        // var result = json.decode(onValue);
+        print(onValue);
+        print("log in end");
+        if(onValue['code'] == 0){
+          Toast.show('登录成功', context);
+        }else{
+          Toast.show(onValue['msg'], context);
+        }
       });
     }
   }
   Future _logInProcess() async{
     print("log in button is tapped");
-    return Future.delayed(Duration(seconds: 5), (){
-      Toast.show("登录超时, 请重试", context);
+
+    var url = 'http://localhost:8080';
+    var result;
+
+    Dio dio = new Dio();
+    dio.options.baseUrl = url;
+    dio.options.connectTimeout = 8000;
+    dio.options.receiveTimeout = 8000;
+
+    FormData formData = new FormData.from({
+      "username": _keyPhone.text,
+      "password": _keyPassword.text,
     });
+    Response<Map> response;
+    try{
+      response = await dio.post("/login", data: formData);
+      result = response.data;
+    }on DioError catch(e){
+      result = {'msg': '登陆超时, 请重试', 'code': 408};
+    }
+    return result;
   }
 }
